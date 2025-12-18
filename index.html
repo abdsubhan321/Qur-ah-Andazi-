@@ -70,7 +70,6 @@
             border-color: #059669;
         }
 
-        /* The Line Numbers Column */
         #lineNumbers {
             background-color: #f1f5f9;
             color: #94a3b8;
@@ -78,26 +77,25 @@
             text-align: center;
             padding: 10px 5px;
             font-size: 1.2em;
-            line-height: 2em; /* Must match textarea line-height */
+            line-height: 2em; 
             overflow: hidden;
             border-left: 1px solid #e2e8f0;
             user-select: none;
-            font-family: sans-serif; /* Numbers look better in sans */
+            font-family: sans-serif;
             font-weight: bold;
         }
 
-        /* The Text Area */
         textarea {
             flex: 1;
             border: none;
             padding: 10px;
             font-family: inherit;
             font-size: 1.2em;
-            line-height: 2em; /* Must match lineNumbers line-height */
+            line-height: 2em;
             resize: none;
             outline: none;
             white-space: pre;
-            overflow-y: scroll; /* Always show scrollbar to prevent layout shift */
+            overflow-y: scroll;
         }
 
         /* --- Display Area --- */
@@ -147,12 +145,11 @@
         .btn-primary { background-color: #059669; color: white; font-size: 1.5em; padding: 15px; width: 100%; font-weight: bold; box-shadow: 0 4px 0 #047857; }
         .btn-primary:active { transform: translateY(4px); box-shadow: none; }
         .btn-primary:disabled { background-color: #9ca3af; box-shadow: none; cursor: not-allowed; }
-        .btn-small { padding: 5px 10px; font-size: 0.9em; background: #e2e8f0; color: #333; }
+        .btn-small { padding: 5px 10px; font-size: 0.9em; background: #e2e8f0; color: #333; margin-left: 5px; }
         .btn-small:hover { background: #cbd5e1; }
 
         .hidden { display: none; }
         
-        /* List Styling */
         #multiList ul { list-style: none; padding: 0; }
         #multiList li { 
             background: #fff; 
@@ -187,7 +184,7 @@
 <body>
 
     <h1>قرعہ اندازی</h1>
-    <p>فاتح کا انتخاب کریں (Choose winner)</p>
+    <p>فاتح کا انتخاب کریں (Giveaway Picker)</p>
 
     <div class="container">
         
@@ -198,11 +195,12 @@
                 <div>
                     <input type="file" id="fileInput" accept=".txt,.csv" class="hidden" onchange="loadFile(this)">
                     <button class="btn-small" onclick="document.getElementById('fileInput').click()">فائل اپلوڈ</button>
+                    <!-- NEW SHUFFLE BUTTON -->
+                    <button class="btn-small" onclick="shuffleNames()">مکس کریں</button>
                     <button class="btn-small" onclick="clearInput()" style="color:red;">صاف کریں</button>
                 </div>
             </div>
             
-            <!-- Input Wrapper for Line Numbers -->
             <div class="input-wrapper">
                 <div id="lineNumbers">1</div>
                 <textarea id="namesInput" placeholder="یہاں نام لکھیں..." oninput="handleInput()" onscroll="syncScroll()"></textarea>
@@ -229,7 +227,6 @@
                 <button id="startBtn" class="btn-primary" onclick="startPicker()">قرعہ اندازی شروع کریں</button>
             </div>
             
-            <!-- Winners List -->
             <div id="multiList" style="margin-top:20px; border-top:1px solid #eee; padding-top:10px;"></div>
         </div>
     </div>
@@ -243,16 +240,12 @@
         var multiList = document.getElementById('multiList');
         var isSpinning = false;
 
-        // --- Handle Input & Update Lines ---
         function handleInput() {
             var text = namesInput.value;
             var lines = text.split('\n');
-            
-            // Update Count (non-empty lines)
             var nonEmptyCount = lines.filter(function(line) { return line.trim() !== ''; }).length;
             countSpan.innerText = nonEmptyCount;
 
-            // Generate Serial Numbers (1, 2, 3...)
             var totalLines = lines.length;
             var numbersHtml = [];
             for (var i = 1; i <= totalLines; i++) {
@@ -261,15 +254,36 @@
             lineNumbers.innerHTML = numbersHtml.join('');
         }
 
-        // --- Sync Scroll (Keep numbers moving with text) ---
         function syncScroll() {
             lineNumbers.scrollTop = namesInput.scrollTop;
+        }
+
+        // --- NEW: Shuffle Function ---
+        function shuffleNames() {
+            var text = namesInput.value;
+            var lines = text.split('\n').filter(function(n) { return n.trim() !== ''; });
+
+            if (lines.length < 2) {
+                alert("شفل کرنے کے لیے کم از کم 2 نام ہونے چاہئیں!");
+                return;
+            }
+
+            // Fisher-Yates Shuffle Algorithm
+            for (var i = lines.length - 1; i > 0; i--) {
+                var j = Math.floor(Math.random() * (i + 1));
+                var temp = lines[i];
+                lines[i] = lines[j];
+                lines[j] = temp;
+            }
+
+            namesInput.value = lines.join('\n');
+            handleInput(); // Updates UI
         }
 
         function clearInput() {
             if(confirm("کیا آپ واقعی لسٹ صاف کرنا چاہتے ہیں؟")) {
                 namesInput.value = "";
-                handleInput(); // Updates count and lines
+                handleInput();
                 resultDisplay.innerText = "تیار ہیں؟";
                 resultDisplay.className = "";
                 multiList.innerHTML = "";
@@ -341,7 +355,6 @@
                 tempNames.splice(randIndex, 1);
             }
 
-            // Display Single Winner
             if (count === 1) {
                 resultDisplay.innerText = winners[0];
                 resultDisplay.className = "winner-pop";
@@ -349,7 +362,6 @@
                 resultDisplay.innerText = "فہرست دیکھیں نیچے 👇";
                 var html = "<h3>فاتحین:</h3><ul>";
                 for(var j=0; j<winners.length; j++) {
-                    // Added Serial Number Badge here
                     html += "<li><span>" + winners[j] + "</span><span class='sl-no-badge'>" + (j+1) + "</span></li>";
                 }
                 html += "</ul>";
@@ -362,7 +374,7 @@
                     return winners.indexOf(line.trim()) === -1;
                 });
                 namesInput.value = newLines.join('\n').trim();
-                handleInput(); // Update line numbers after removal
+                handleInput();
             }
 
             isSpinning = false;
@@ -373,76 +385,3 @@
 </body>
 </html>
 
-                    قرعہ اندازی شروع کریں
-                </button>
-            </div>
-
-            <!-- History -->
-            <div id="historyPanel" class="bg-white/60 rounded-2xl p-5 border border-white/50 backdrop-blur-sm hidden">
-                <h4 class="text-lg font-bold text-gray-500 uppercase mb-3 flex items-center gap-2 justify-end" id="historyTitleContainer">
-                    <span id="historyTitle">حالیہ ریکارڈ</span>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 1 0 5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path></svg>
-                </h4>
-                <div id="historyList" class="flex flex-wrap gap-2 max-h-24 overflow-y-auto justify-end custom-scrollbar"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Footer -->
-    <div id="footerText" class="mt-16 mb-10 text-center opacity-60 text-xl font-bold font-sans text-emerald-900">قرعہ اندازی • ایکسل سپورٹ • ملٹی ونرز</div>
-
-    <!-- JavaScript -->
-    <script>
-        // Translations
-        const translations = {
-            ur: { title: "قرعہ اندازی", subtitle: "اپنے پسندیدہ فاتح کا انتخاب کریں!", info: "یہ ویب سائٹ قرعہ اندازی کو شفاف اور آسان بنانے کے لیے ہے۔ آپ دستی طور پر نام لکھ سکتے ہیں یا فائل اپ لوڈ کر سکتے ہیں۔", participants: "شرکاء", placeholder: "یہاں نام لکھیں...", pickOne: "قرعہ اندازی شروع کریں", pickMulti: "{n} فاتحین چنیں", numWinners: "فاتحین کی تعداد:", removeWinnerShort: "فاتح کو فہرست سے خارج کریں", removeWinnerNote: "(نام دوبارہ نہیں آئے گا)", ready: "تیار ہیں؟", winnerLabel: "فاتح ہے", spinning: "انتخاب ہو رہا ہے...", winnersList: "فاتحین کی فہرست", recent: "حالیہ ریکارڈ", footer: "قرعہ اندازی • ایکسل سپورٹ • ملٹی ونرز", alertEmpty: "براہ کرم پہلے کچھ نام درج کریں!", alertCount: "آپ نے {n} فاتحین مانگے ہیں لیکن فہرست میں صرف {t} لوگ ہیں۔", confetti: "خوشی کا اظہار", theme: "رنگین تھیم", duration: "دورانیہ", seconds: "سیکنڈ", done: "مکمل" },
-            en: { title: "Giveaway Picker", subtitle: "Pick your winner fairly and easily!", info: "This website makes giveaways transparent and easy. You can enter names manually or upload a file.", participants: "Participants", placeholder: "Enter names here...", pickOne: "Pick Winner", pickMulti: "Pick {n} Winners", numWinners: "Number of Winners:", removeWinnerShort: "Remove winner from list", removeWinnerNote: "(Won't win again)", ready: "Ready?", winnerLabel: "The Winner Is", spinning: "Picking...", winnersList: "Winners List", recent: "Recent History", footer: "Giveaway Picker • Excel Support • Multi-Winners", alertEmpty: "Please enter names first!", alertCount: "You asked for {n} winners but have only {t} people.", confetti: "Confetti Effect", theme: "Color Theme", duration: "Duration", seconds: "sec", done: "Done" },
-            ar: { title: "سحب القرعة", subtitle: "اختر الفائز المفضل لديك بنزاهة!", info: "تم تصميم هذا الموقع لجعل الهدايا شفافة وسهلة. يمكنك إدخال الأسماء يدويًا أو تحميل ملف.", participants: "المشاركون", placeholder: "أدخل الأسماء هنا...", pickOne: "اختر الفائز", pickMulti: "اختر {n} فائزين", numWinners: "عدد الفائزين:", removeWinnerShort: "إزالة الفائز من القائمة", removeWinnerNote: "(لن يتكرر الاسم)", ready: "مستعد؟", winnerLabel: "الفائز هو", spinning: "جاري الاختيار...", winnersList: "قائمة الفائزين", recent: "السجل الحديث", footer: "سحب القرعة • دعم إكسل • فائزون متعددون", alertEmpty: "الرجاء إدخال الأسماء!", alertCount: "لقد طلبت {n} فائزين ولكن يوجد {t} فقط.", confetti: "احتفال", theme: "لون الثيم", duration: "المدة", seconds: "ثواني", done: "تم" },
-            hi: { title: "लकी ड्रॉ", subtitle: "अपने विजेता को निष्पक्ष रूप से चुनें!", info: "यह वेबसाइट लकी ड्रॉ को पारदर्शी और आसान बनाने के लिए है। आप नाम मैन्युअल रूप से दर्ज कर सकते हैं या फ़ाइल अपलोड कर सकते हैं।", participants: "प्रतिभागी", placeholder: "यहाँ नाम दर्ज करें...", pickOne: "विजेता चुनें", pickMulti: "{n} विजेता चुनें", numWinners: "विजेताओं की संख्या:", removeWinnerShort: "विजेता को सूची से हटा दें", removeWinnerNote: "(नाम दोबारा नहीं आएगा)", ready: "तैयार?", winnerLabel: "विजेता है", spinning: "चयन हो रहा है...", winnersList: "विजेताओं की सूची", recent: "हालिया इतिहास", footer: "लकी ड्रॉ • एक्सेल सपोर्ट • मल्टी-विजेता", alertEmpty: "कृपया नाम दर्ज करें!", alertCount: "आपने {n} विजेता मांगे लेकिन केवल {t} लोग हैं।", confetti: "जश्न", theme: "रंग थीम", duration: "अवधि", seconds: "सेकंड", done: "संपन्न" }
-        };
-
-        // State
-        let state = {
-            lang: 'ur',
-            names: [],
-            winners: [],
-            history: [],
-            settings: { theme: 'emerald', duration: 3000, confetti: true }
-        };
-
-        // DOM Elements
-        const els = {
-            appTitle: document.getElementById('appTitle'),
-            appSubtitle: document.getElementById('appSubtitle'),
-            appInfo: document.getElementById('appInfo'),
-            participantsLabel: document.getElementById('participantsLabel'),
-            countLabel: document.getElementById('countLabel'),
-            namesInput: document.getElementById('namesInput'),
-            lineNumbers: document.getElementById('lineNumbers'),
-            actionBtn: document.getElementById('actionBtn'),
-            winnersCount: document.getElementById('winnersCount'),
-            numWinnersLabel: document.getElementById('numWinnersLabel'),
-            mainDisplay: document.getElementById('mainDisplay'),
-            winnerLabel: document.getElementById('winnerLabel'),
-            singleWinnerDisplay: document.getElementById('singleWinnerDisplay'),
-            multiWinnersList: document.getElementById('multiWinnersList'),
-            multiWinnersGrid: document.getElementById('multiWinnersGrid'),
-            winnersListTitle: document.getElementById('winnersListTitle'),
-            spinOverlay: document.getElementById('spinOverlay'),
-            spinningText: document.getElementById('spinningText'),
-            removeWinnerCheck: document.getElementById('removeWinnerCheck'),
-            removeWinnerShort: document.getElementById('removeWinnerShort'),
-            removeWinnerNote: document.getElementById('removeWinnerNote'),
-            confettiCheck: document.getElementById('confettiCheck'),
-            durationRange: document.getElementById('durationRange'),
-            durationValue: document.getElementById('durationValue'),
-            secLabel: document.getElementById('secLabel'),
-            confettiLabel: document.getElementById('confettiLabel'),
-            themeLabel: document.getElementById    };
-
-        // --- STATE MANAGEMENT ---
-        let state = { lang: 'ur', names: '', winner: null, multiWinners: [], isSpinning: false, history: [], settings: { theme: 'emerald', duration: 3000 } };
-        
-        // --- DOM ELEMENT CACHE ---
-        const getEl = (id) => document.getElementById(id);
-        const els = { body: document.body, namesInput: getEl('namesInput'), lineNumbers: getEl('lineNumbers'), countLabel: g
