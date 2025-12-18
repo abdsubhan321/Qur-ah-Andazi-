@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>قرعہ اندازی - Giveaway Picker</title>
+    <!-- Updated Title -->
+    <title>قرعہ اندازی - Choose Winner</title>
     
     <!-- Google Fonts for Urdu -->
     <link href="https://fonts.googleapis.com/css2?family=Gulzar&family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet">
@@ -184,7 +185,8 @@
 <body>
 
     <h1>قرعہ اندازی</h1>
-    <p>فاتح کا انتخاب کریں (Pick Winner)</p>
+    <!-- Updated Subtitle -->
+    <p>فاتح کا انتخاب کریں (Choose Winner)</p>
 
     <div class="container">
         
@@ -195,7 +197,6 @@
                 <div>
                     <input type="file" id="fileInput" accept=".txt,.csv" class="hidden" onchange="loadFile(this)">
                     <button class="btn-small" onclick="document.getElementById('fileInput').click()">فائل اپلوڈ</button>
-                    <!-- NEW SHUFFLE BUTTON -->
                     <button class="btn-small" onclick="shuffleNames()">ترتیب بدلیں</button>
                     <button class="btn-small" onclick="clearInput()" style="color:red;">صاف کریں</button>
                 </div>
@@ -258,17 +259,15 @@
             lineNumbers.scrollTop = namesInput.scrollTop;
         }
 
-        // --- NEW: Shuffle Function ---
         function shuffleNames() {
             var text = namesInput.value;
             var lines = text.split('\n').filter(function(n) { return n.trim() !== ''; });
 
             if (lines.length < 2) {
-                alert("شفل کرنے کے لیے کم از کم 2 نام ہونے چاہئیں!");
+                alert("ترتیب بدلنے کے لیے کم از کم 2 نام ہونے چاہئیں!");
                 return;
             }
 
-            // Fisher-Yates Shuffle Algorithm
             for (var i = lines.length - 1; i > 0; i--) {
                 var j = Math.floor(Math.random() * (i + 1));
                 var temp = lines[i];
@@ -277,7 +276,7 @@
             }
 
             namesInput.value = lines.join('\n');
-            handleInput(); // Updates UI
+            handleInput();
         }
 
         function clearInput() {
